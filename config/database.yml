@@ -82,5 +82,7 @@ test:
 production:
   <<: *default
   database: sample611_production
-  username: sample611
-  password: <%= ENV['SAMPLE611_DATABASE_PASSWORD'] %>
+  username: <%= Rails.application.credentials.db[:username] %>
+  password: <%= Rails.application.credentials.db[:password] %>
+  host:     <%= Rails.application.credentials.db[:host] %>
+  port:     5432

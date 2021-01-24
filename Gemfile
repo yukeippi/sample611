@@ -6,7 +6,7 @@ ruby '2.7.2'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 6.1.1'
 # Use postgresql as the database for Active Record
-gem 'pg', '~> 1.1'
+gem 'mysql2', '0.5.3'
 # Use Puma as the app server
 gem 'puma', '~> 5.0'
 # Use SCSS for stylesheets
@@ -42,7 +42,7 @@ group :development do
   gem "capistrano", "~> 3.14", require: false
   gem "capistrano-rails", "~> 1.6", require: false
   gem 'capistrano-rbenv', '~> 2.2'
-  gem 'capistrano3-unicorn'
+  gem 'capistrano3-puma'
 end
 
 group :test do
@@ -51,10 +51,6 @@ group :test do
   gem 'selenium-webdriver'
   # Easy installation and use of web drivers to run system tests with browsers
   gem 'webdrivers'
-end
-
-group :production do
-  gem 'unicorn'
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem

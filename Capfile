@@ -35,7 +35,10 @@ install_plugin Capistrano::SCM::Git
 # require "capistrano/passenger"
 require 'capistrano/rails'  # 追加
 require "capistrano/rbenv"  # 追加
-require 'capistrano3/unicorn' # 追加
+require 'capistrano/puma'   # 追加
+
+install_plugin Capistrano::Puma
+install_plugin Capistrano::Puma::Systemd # systemd経由でリスタートするために必要
 
 # Load custom tasks from `lib/capistrano/tasks` if you have any defined
 Dir.glob("lib/capistrano/tasks/*.rake").each { |r| import r }

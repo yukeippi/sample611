@@ -9,7 +9,7 @@
 # 本番実行環境
 - Ruby 2.7.2
 - Rails 6.1.1
-- Nginx + Unicorn
+- Nginx + Puma
 - Node.js 14
 - Yarn
 - PosgtreSQL
@@ -133,12 +133,12 @@ production:
   username: <%= Rails.application.credentials.db[:username] %>
   password: <%= Rails.application.credentials.db[:password] %>
   host:     <%= Rails.application.credentials.db[:host] %>
-  port:     5432（MySQLの場合は3306）
+  port:     3306 # MySQLの場合
 ```
 
 12. デプロイ先設定
 
-Railsアプリの設置場所を「/var/rails」とする。Railsアプリの実行はrootではなく、ec2-userで行うので、このディレクトリの所有者をec2-userにする。
+Railsアプリの設置場所を「/var/rails/sample611」とする。Railsアプリの実行はrootではなく、ec2-userで行うので、このディレクトリの所有者をec2-userにする。
 ```bash
 $ cd /var/
 $ sudo mkdir rails
@@ -208,34 +208,27 @@ $ bundle exec cap production deploy
 $ sudo amazon-linux-extras install nginx1 -y
 ```
 
-nginx.confの編集
-
-```bash
-$ sudo vim /etc/nginx/nginx.conf
-user ec2-user;
-```
-
-アプリの設定
+NginxとRailsアプリの設定
 ```bash
 $ sudo touch /etc/nginx/conf.d/myapp.conf
 $ sudo vim /etc/nginx/conf.d/myapp.conf
 ```
 
 ```
-upstream railsapp {
-    server unix:///var/rails/sample611/current/tmp/sockets/puma.sock fail_timeout=0;
+upstream puma {
+    server unix:///var/rails/sample611/shared/tmp/sockets/puma.sock fail_timeout=0;
 }
 
 server {
     listen 80;
-    server_name myapp.jp;
+    server_name example.com;
 
     root /var/rails/sample611/current/public;
 
     try_files $uri/index.html $uri @railsapp;
 
     location @railsapp {
-        proxy_pass http://railsapp;
+        proxy_pass http://puma;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Host $http_host;
         proxy_redirect off;
@@ -260,9 +253,14 @@ After=network.target
 
 [Service]
 Type=simple
+User=ec2-user
 Environment="RAILS_ENV=production"
 WorkingDirectory=/var/rails/sample611/current
-ExecStart=/home/ec2-user/.rbenv/shims/bundle exec /var/rails/sample611/shared/bundle/ruby/2.6.0/bin/puma -C /var/rails/sample611/current/config/puma/production.rb
+ExecStart=/home/ec2-user/.rbenv/shims/bundle exec /var/rails/sample611/shared/bundle/ruby/2.7.0/bin/puma -C /var/rails/sample611/current/config/puma/production.rb
+ExecReload=/bin/kill -TSTP $MAINPID
+ExecStop=/bin/kill -TERM $MAINPID
+StandardOutput=append:/var/rails/sample611/shared/log/puma_access.log
+StandardError=append:/var/rails/sample611/shared/log/puma_error.log
 Restart=always
 
 [Install]

@@ -1,4 +1,4 @@
-name: Run Rspec
+name: Run Rspec and Deploy
 
 on:
   push:
@@ -47,3 +47,17 @@ jobs:
         bundle exec rails db:test:prepare
     - name: Run test
       run: TZ=Asiz/Tokyo bundle exec rspec -f d
+
+  deploy:
+    needs: rspec
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.7.2
+        bundler-cache: true
+    - uses: miloserdow/capistrano-deploy@master
+      with:
+        target: production_mysql
+        deploy_key: ${{ secrets.DEPLOY_ENC_KEY }}

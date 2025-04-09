@@ -294,3 +294,5 @@ unicorn, nginxの自動起動設定
 $ sudo systemctl enable unicorn.service
 $ sudo systemctl enable nginx.service
 ```
+
+test
